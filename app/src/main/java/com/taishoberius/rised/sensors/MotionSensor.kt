@@ -17,26 +17,6 @@ class MotionSensor() {
     private lateinit var listener: ValueChangedListener
     private var isWaiting = false
 
-    private val gpioCallback = object : GpioCallback {
-        override fun onGpioEdge(gpio: Gpio): Boolean {
-            Log.d(TAG, "${gpio.value}, $isWaiting")
-            if (!isWaiting) {
-                if (gpio.value) {
-                    listener.onValueChanged(true)
-                } else {
-                    waitForSomeOne(gpio)
-                }
-            }
-
-            // Continue listening for more interrupts
-            return true
-        }
-
-        override fun onGpioError(gpio: Gpio, error: Int) {
-            Log.w(TAG, "$gpio: Error event $error")
-        }
-    }
-
     constructor(bcm: String) : this() {
         motionSensor = try {
             PeripheralManager.getInstance()
@@ -47,28 +27,47 @@ class MotionSensor() {
         }
 
         motionSensor?.apply {
-            // Initialize the pin as an input
             setDirection(Gpio.DIRECTION_IN)
-            // Low voltage is considered active
             setActiveType(Gpio.ACTIVE_HIGH)
-
-            // Register for all state changes
             setEdgeTriggerType(Gpio.EDGE_BOTH)
-            registerGpioCallback(gpioCallback)
+            registerGpioCallback(object : GpioCallback {
+                override fun onGpioEdge(gpio: Gpio): Boolean {
+                    if (!isWaiting) {
+                        if (gpio.value) {
+                            listener.onValueChanged(true)
+                        } else {
+                            waitForSomeOne(gpio)
+                        }
+                    }
+
+                    // Continue listening for more interrupts
+                    return true
+                }
+
+                override fun onGpioError(gpio: Gpio, error: Int) {
+                    Log.w(TAG, "$gpio: Error event $error")
+                }
+            })
         }
     }
 
     private fun waitForSomeOne(gpio: Gpio) {
         isWaiting = true
+        var hasDetectedSomething =false
         GlobalScope.launch(context = Dispatchers.Main) {
+            //check every 500ms for 10sec if there is something
             for(i in 0..20) {
                 delay(500)
-                if (!gpio.value) {
-                    listener.onValueChanged(false)
+                if (gpio.value) {
+                    hasDetectedSomething = true
                     break
                 }
             }
             isWaiting = false
+            //No one was detected, so say it
+            if (!hasDetectedSomething) {
+                listener.onValueChanged(false)
+            }
         }
     }
 

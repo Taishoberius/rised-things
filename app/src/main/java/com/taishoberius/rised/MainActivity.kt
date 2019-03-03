@@ -26,11 +26,11 @@ class MainActivity : Activity() {
         initListener()
     }
 
-    fun initView() {
-        val motionSensor = MotionSensor("BCM17")
+    private fun initView() {
+        motionSensor = MotionSensor("BCM17")
     }
 
-    fun initListener() {
+    private fun initListener() {
         motionSensor.setOnValueChangedListener(object : MotionSensor.ValueChangedListener {
             override fun onValueChanged(newValue: Boolean) {
                 if(newValue) {
