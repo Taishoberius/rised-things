@@ -9,4 +9,4 @@ To connect to you Pi with adb:
 $ adb connect Android.local
 ```
 
-Then you can run the project with AS
+Then you can run the project with AS.
