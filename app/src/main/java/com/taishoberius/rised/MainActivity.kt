@@ -5,14 +5,9 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import com.google.android.things.pio.PeripheralManager
-import com.google.android.things.pio.UartDevice
-import com.google.android.things.pio.UartDeviceCallback
 import com.taishoberius.rised.sensors.Arduino
 import com.taishoberius.rised.sensors.MotionSensor
 import kotlinx.android.synthetic.main.activity_main.*
-import java.io.IOException
-import java.lang.StringBuilder
-import java.nio.charset.Charset
 
 class MainActivity : Activity() {
 
