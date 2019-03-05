@@ -8,6 +8,7 @@ import java.io.IOException
 import java.lang.NumberFormatException
 import java.lang.StringBuilder
 import java.nio.charset.Charset
+import java.util.jar.JarEntry
 
 class Arduino(uartPin: String = "UART0") {
     private val TAG = "Arduino"
@@ -37,7 +38,11 @@ class Arduino(uartPin: String = "UART0") {
                 // Read available data from the UART device
                 try {
                     var data = readUartBuffer(uart).trim()
-                    Log.v(TAG, "Received '${data.substring(0, data.indexOf('\r'))}' from Arduino")
+                    try {
+                        Log.v(TAG, "Received '${data.substring(0, data.indexOf('\r'))}' from Arduino")
+                    } catch (sioobe: StringIndexOutOfBoundsException) {
+                        Log.v(TAG, "Received data from Arduino")
+                    }
                     when (data[0]) {
                         TEMPERATURE_INDICATOR -> {
                             data.replace(" ", "")
