@@ -8,7 +8,6 @@ import java.io.IOException
 import java.lang.NumberFormatException
 import java.lang.StringBuilder
 import java.nio.charset.Charset
-import java.util.jar.JarEntry
 
 class Arduino(uartPin: String = "UART0") {
     private val TAG = "Arduino"
@@ -28,7 +27,7 @@ class Arduino(uartPin: String = "UART0") {
         }
         mDevice?.apply {
             // Configure the UART port
-            setBaudrate(9600)
+            setBaudrate(115200)
             setDataSize(8)
             setParity(UartDevice.PARITY_NONE)
             setStopBits(1)
@@ -38,32 +37,16 @@ class Arduino(uartPin: String = "UART0") {
                 // Read available data from the UART device
                 try {
                     var data = readUartBuffer(uart).trim()
+                    Log.v(TAG, "Received $data from Arduino")
+
+                    var array = data.split('/')
                     try {
-                        Log.v(TAG, "Received '${data.substring(0, data.indexOf('\r'))}' from Arduino")
-                    } catch (sioobe: StringIndexOutOfBoundsException) {
-                        Log.v(TAG, "Received data from Arduino")
-                    }
-                    when (data[0]) {
-                        TEMPERATURE_INDICATOR -> {
-                            data.replace(" ", "")
-                            data = data.substring(1)
-                            try {
-                                val temperature = data.toFloat()
-                                listener?.onTemperatureChangedChanged(temperature)
-                            } catch (nfe: NumberFormatException) {
-
-                            }
-                        }
-                        HUMIDITY_INDICATOR -> {
-                            data.replace(" ", "")
-                            data = data.substring(1)
-                            try {
-                                val humidity = data.toFloat()
-                                listener?.onHumidityChanged(humidity)
-                            } catch (nfe: NumberFormatException) {
-
-                            }
-                        }
+                        listener?.onTemperatureChangedChanged(data.split('/')[0].toFloat())
+                        listener?.onHumidityChanged(data.split('/')[1].toFloat())
+                    } catch (nfe: NumberFormatException) {
+                        Log.v(TAG, "Failed to send the temperature or humidity (NumberFormatException)")
+                    } catch (ioobe: IndexOutOfBoundsException) {
+                        Log.v(TAG, "Failed to send the temperature or humidity (IndexOutOfBoundsException)")
                     }
                 } catch (e: IOException) {
                     Log.w(TAG, "Unable to access UART device", e)
@@ -82,18 +65,22 @@ class Arduino(uartPin: String = "UART0") {
     private fun readUartBuffer(uartDevice: UartDevice): String {
         // Maximum amount of data to read at one time
         val maxCount = 8
-        val str = StringBuilder()
+        val strBuilder = StringBuilder()
         uartDevice.apply {
             ByteArray(maxCount).also { buffer ->
                 var count: Int = read(buffer, buffer.size)
-                str.append(buffer.toString(Charset.defaultCharset()))
+                strBuilder.append(buffer.toString(Charset.defaultCharset()))
                 while (count > 0) {
                     count = read(buffer, buffer.size)
-                    str.append(buffer.toString(Charset.defaultCharset()))
+                    strBuilder.append(buffer.toString(Charset.defaultCharset()))
                 }
             }
         }
-        return str.toString()
+        var str = strBuilder.toString()
+        if (strBuilder.toString().indexOf('\r') != -1) {
+            str = str.substring(0, strBuilder.toString().indexOf('\r'))
+        }
+        return str
 
     }
 
