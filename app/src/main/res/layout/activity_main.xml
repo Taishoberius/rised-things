@@ -4,6 +4,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <com.taishoberius.rised.meteo.view.MeteoCardView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/guideline_1">
+
+        <include layout="@layout/meteo"/>
+
+    </com.taishoberius.rised.meteo.view.MeteoCardView>
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_1"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.3"/>
+
     <TextView
         android:id="@+id/txv_temperature"
         android:layout_height="wrap_content"
