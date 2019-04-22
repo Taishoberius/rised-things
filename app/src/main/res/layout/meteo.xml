@@ -5,5 +5,16 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rcv_meteo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:listitem="@layout/meteo_item"
+        tools:itemCount="3">
+
+
+    </androidx.recyclerview.widget.RecyclerView>
 
 </android.support.constraint.ConstraintLayout>
