@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">My Application</string>
+    <string name="current_temperature">Temperature : %.0f°C</string>
+    <string name="current_humidity">Humidity : %d%%</string>
 </resources>
