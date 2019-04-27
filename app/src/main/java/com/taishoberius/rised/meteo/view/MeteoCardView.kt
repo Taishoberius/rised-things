@@ -13,7 +13,7 @@ import com.taishoberius.rised.meteo.viewmodel.IMeteoCardViewModel
 import com.taishoberius.rised.meteo.viewmodel.MeteoCardViewModel
 import kotlinx.android.synthetic.main.meteo.view.*
 
-class MeteoCardView: BaseCardView, IMeteoCardView, LifecycleOwner {
+class MeteoCardView: BaseCardView, LifecycleOwner {
 
     private var model: IMeteoCardViewModel = MeteoCardViewModel()
     private var lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
@@ -31,7 +31,7 @@ class MeteoCardView: BaseCardView, IMeteoCardView, LifecycleOwner {
     override fun onAttachedToWindow() {
         lifecycleRegistry.markState(Lifecycle.State.RESUMED)
         super.onAttachedToWindow()
-        model.getCurrentWeatherLiveData().observe(this as LifecycleOwner, Observer { fc ->
+        model.getCurrentWeatherLiveData().observe(this, Observer { fc ->
             Log.d(TAG, fc.toString())
         })
     }
