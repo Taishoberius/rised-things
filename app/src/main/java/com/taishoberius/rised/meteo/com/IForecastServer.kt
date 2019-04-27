@@ -27,19 +27,19 @@ interface IForecastServer {
         @Query("lon") cityLon: Double
     ): Deferred<Response<Forecast>>
 
-    @GET("/data/2.5/weather")
+    @GET("/data/2.5/forecast")
     fun getFiveDaysForecastForCityNameAsync(
         @Query("appid") appid: String,
         @Query("q") cityName: String
     ): Deferred<Response<List<Forecast>>>
 
-    @GET("/data/2.5/weather")
+    @GET("/data/2.5/forecast")
     fun getFiveDaysForecastForCityIdAsync(
         @Query("appid") appid: String,
         @Query("id") cityId: Int
     ): Deferred<Response<List<Forecast>>>
 
-    @GET("/data/2.5/weather")
+    @GET("/data/2.5/forecast")
     fun getFiveDaysForecastForCityLatLonAsync(
         @Query("appid") appid: String,
         @Query("lat") cityLat: Double,

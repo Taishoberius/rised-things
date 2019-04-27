@@ -28,9 +28,10 @@ class ForecastService: IForecastService {
                         RxBus.publish(RxEvent.ForecastEvent(false, null))
                     }
                 } catch (e: HttpException) {
-                    Log.d(TAG, "HTTPException : ${e.message()}")
+                    Log.e(TAG, "HTTPException : ${e.message()}")
                 } catch (e: Throwable) {
-                    Log.d(TAG, e.stackTrace.toString())
+                    Log.e(TAG, "getCurrentWeather(city: String) failed :")
+                    e.printStackTrace()
                 }
             }
         }
@@ -49,9 +50,10 @@ class ForecastService: IForecastService {
                         RxBus.publish(RxEvent.ForecastEvent(false, null))
                     }
                 } catch (e: HttpException) {
-                    Log.d(TAG, "HTTPException : ${e.message()}")
+                    Log.e(TAG, "HTTPException : ${e.message()}")
                 } catch (e: Throwable) {
-                    Log.d(TAG, e.stackTrace.toString())
+                    Log.e(TAG, "getCurrentWeather(cityId: Int) failed :")
+                    e.printStackTrace()
                 }
             }
         }
@@ -70,9 +72,10 @@ class ForecastService: IForecastService {
                         RxBus.publish(RxEvent.ForecastEvent(false, null))
                     }
                 } catch (e: HttpException) {
-                    Log.d(TAG, "HTTPException : ${e.message()}")
+                    Log.e(TAG, "HTTPException : ${e.message()}")
                 } catch (e: Throwable) {
-                    Log.d(TAG, e.stackTrace.toString())
+                    Log.e(TAG, "getCurrentWeather(lat: Double, lon: Double) failed :")
+                    e.printStackTrace()
                 }
             }
         }
@@ -91,9 +94,10 @@ class ForecastService: IForecastService {
                         RxBus.publish(RxEvent.ForecastListEvent(false, null))
                     }
                 } catch (e: HttpException) {
-                    Log.d(TAG, "HTTPException : ${e.message()}")
+                    Log.e(TAG, "HTTPException : ${e.message()}")
                 } catch (e: Throwable) {
-                    Log.d(TAG, e.stackTrace.toString())
+                    Log.e(TAG, "getFiveDaysWeather(city: String) failed :")
+                    e.printStackTrace()
                 }
             }
         }
@@ -112,9 +116,10 @@ class ForecastService: IForecastService {
                         RxBus.publish(RxEvent.ForecastListEvent(false, null))
                     }
                 } catch (e: HttpException) {
-                    Log.d(TAG, "HTTPException : ${e.message()}")
+                    Log.e(TAG, "HTTPException : ${e.message()}")
                 } catch (e: Throwable) {
-                    Log.d(TAG, e.stackTrace.toString())
+                    Log.e(TAG, "getFiveDaysWeather(cityId: Int) failed :")
+                    e.printStackTrace()
                 }
             }
         }
@@ -133,9 +138,10 @@ class ForecastService: IForecastService {
                         RxBus.publish(RxEvent.ForecastListEvent(false, null))
                     }
                 } catch (e: HttpException) {
-                    Log.d(TAG, "HTTPException : ${e.message()}")
+                    Log.e(TAG, "HTTPException : ${e.message()}")
                 } catch (e: Throwable) {
-                    Log.d(TAG, e.stackTrace.toString())
+                    Log.e(TAG, "getFiveDaysWeather(lat: Double, lon: Double) failed :")
+                    e.printStackTrace()
                 }
             }
         }

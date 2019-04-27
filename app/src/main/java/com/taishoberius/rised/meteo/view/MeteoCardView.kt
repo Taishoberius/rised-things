@@ -15,25 +15,29 @@ import kotlinx.android.synthetic.main.meteo.view.*
 
 class MeteoCardView: BaseCardView, IMeteoCardView, LifecycleOwner {
 
-    private lateinit var model: IMeteoCardViewModel
-    private lateinit var lifecycleRegistry: LifecycleRegistry
+    private var model: IMeteoCardViewModel = MeteoCardViewModel()
+    private var lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
     private val TAG = "MeteoCardView"
 
     constructor(context: Context) : this(context, null)
 
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
 
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {}
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+        lifecycleRegistry.markState(Lifecycle.State.INITIALIZED)
+
+    }
 
     override fun onAttachedToWindow() {
+        lifecycleRegistry.markState(Lifecycle.State.RESUMED)
         super.onAttachedToWindow()
-        model = MeteoCardViewModel()
         model.getCurrentWeatherLiveData().observe(this as LifecycleOwner, Observer { fc ->
             Log.d(TAG, fc.toString())
         })
     }
 
     override fun onDetachedFromWindow() {
+        lifecycleRegistry.markState(Lifecycle.State.DESTROYED)
         model.onCardViewDetached()
         super.onDetachedFromWindow()
     }
