@@ -1,6 +1,6 @@
 package com.taishoberius.rised.meteo.model
 
 data class Wind(
-    private val speed: Double,
-    private val deg: Int
+    val speed: Double,
+    val deg: Double
 )

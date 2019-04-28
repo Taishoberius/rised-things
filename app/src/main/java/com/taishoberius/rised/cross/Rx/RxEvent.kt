@@ -10,6 +10,6 @@ class RxEvent {
 
     class ForecastListEvent(
         val success: Boolean,
-        val forecasts: List<Forecast>?
+        val forecasts: List<Forecast>? = listOf()
     )
 }

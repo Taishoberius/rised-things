@@ -4,7 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="@color/activityBackground">
 
     <TextView
         android:id="@+id/txv_day"
@@ -13,7 +14,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="@id/imv_day"
         app:layout_constraintEnd_toEndOf="@id/imv_day"
-        tools:text="18/04"/>
+        tools:text="18/04"
+        android:text="18/04"/>
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/imv_day"
@@ -21,10 +23,12 @@
         android:layout_height="@dimen/meteo_img_size"
         app:layout_constraintTop_toBottomOf="@id/txv_day"
         tools:srcCompat="@drawable/ic_thunder"
+        app:srcCompat="@drawable/ic_thunder"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
         app:layout_constraintStart_toStartOf="parent"/>
 
     <TextView
+        android:id="@+id/txv_temp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="@id/imv_day"

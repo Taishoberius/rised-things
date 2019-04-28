@@ -16,15 +16,17 @@ class ForecastService: IForecastService {
     private val TAG = "ForecastService"
 
     override fun getCurrentWeather(city: String) {
-        val service = ForecastServer.makeCurrentForecastService()
+        val service = ForecastServer.makeCurrentWeatherForecastService()
         CoroutineScope(Dispatchers.IO).launch {
             val request = service.getCurrentWeatherFromCityNameAsync(appid = URLManager.appId, cityName = city)
             withContext(Dispatchers.Main) {
                 try {
                     val response = request.await()
                     if (response.isSuccessful) {
+                        Log.d("COUCOU", "success")
                         RxBus.publish(RxEvent.ForecastEvent(true, response.body()))
                     } else {
+                        Log.d("COUCOU", "pas success")
                         RxBus.publish(RxEvent.ForecastEvent(false, null))
                     }
                 } catch (e: HttpException) {
@@ -38,7 +40,7 @@ class ForecastService: IForecastService {
     }
 
     override fun getCurrentWeather(cityId: Int) {
-        val service = ForecastServer.makeCurrentForecastService()
+        val service = ForecastServer.makeCurrentWeatherForecastService()
         CoroutineScope(Dispatchers.IO).launch {
             val request = service.getCurrentWeatherFromCityIdAsync(appid = URLManager.appId, cityId = cityId)
             withContext(Dispatchers.Main) {
@@ -60,7 +62,7 @@ class ForecastService: IForecastService {
     }
 
     override fun getCurrentWeather(lat: Double, lon: Double) {
-        val service = ForecastServer.makeCurrentForecastService()
+        val service = ForecastServer.makeCurrentWeatherForecastService()
         CoroutineScope(Dispatchers.IO).launch {
             val request = service.getCurrentWeatherFromCityLatLonAsync(appid = URLManager.appId, cityLat = lat, cityLon = lon)
             withContext(Dispatchers.Main) {
@@ -82,7 +84,7 @@ class ForecastService: IForecastService {
     }
 
     override fun getFiveDaysWeather(city: String) {
-        val service = ForecastServer.makeCurrentForecastService()
+        val service = ForecastServer.makeFiceDaysForecastService()
         CoroutineScope(Dispatchers.IO).launch {
             val request = service.getFiveDaysForecastForCityNameAsync(appid = URLManager.appId, cityName = city)
             withContext(Dispatchers.Main) {
@@ -104,7 +106,7 @@ class ForecastService: IForecastService {
     }
 
     override fun getFiveDaysWeather(cityId: Int) {
-        val service = ForecastServer.makeCurrentForecastService()
+        val service = ForecastServer.makeFiceDaysForecastService()
         CoroutineScope(Dispatchers.IO).launch {
             val request = service.getFiveDaysForecastForCityIdAsync(appid = URLManager.appId, cityId = cityId)
             withContext(Dispatchers.Main) {
@@ -126,7 +128,7 @@ class ForecastService: IForecastService {
     }
 
     override fun getFiveDaysWeather(lat: Double, lon: Double) {
-        val service = ForecastServer.makeCurrentForecastService()
+        val service = ForecastServer.makeFiceDaysForecastService()
         CoroutineScope(Dispatchers.IO).launch {
             val request = service.getFiveDaysForecastForCityLatLonAsync(appid = URLManager.appId, cityLat = lat, cityLon = lon)
             withContext(Dispatchers.Main) {

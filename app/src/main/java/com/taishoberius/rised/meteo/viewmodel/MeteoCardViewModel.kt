@@ -1,5 +1,6 @@
 package com.taishoberius.rised.meteo.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.taishoberius.rised.cross.viewmodel.BaseCardViewModel
@@ -7,6 +8,7 @@ import com.taishoberius.rised.cross.Rx.RxBus
 import com.taishoberius.rised.cross.Rx.RxEvent
 import com.taishoberius.rised.cross.com.ForecastRetrofitBuilder
 import com.taishoberius.rised.cross.com.ServiceManager
+import com.taishoberius.rised.cross.utils.MeteoUtils
 import com.taishoberius.rised.meteo.model.Forecast
 import io.reactivex.disposables.Disposable
 
@@ -15,6 +17,7 @@ class MeteoCardViewModel : BaseCardViewModel(), IMeteoCardViewModel {
     //================================================================================
     // Attributes
     //================================================================================
+    private val TAG = "MeteoCardViewModel"
     private var currentWeatherDisposable: Disposable
     private var fiveDaysForecastDisposable: Disposable
 
@@ -48,20 +51,17 @@ class MeteoCardViewModel : BaseCardViewModel(), IMeteoCardViewModel {
     // Overrides from IMeteoCardViewModel
     //================================================================================
 
-    override fun launchGetForecast() {
-        ServiceManager.getForecastService().getFiveDaysWeather("Paris")
-    }
-
-    override fun launchGetCurrentWeather() {
+    override fun launchGetWeather() {
         //TODO get the current city
-        ServiceManager.getForecastService().getCurrentWeather("Paris,fr")
+        //ServiceManager.getForecastService().getCurrentWeather("Paris,fr")
+        ServiceManager.getForecastService().getFiveDaysWeather("Paris,fr")
     }
 
     override fun getCurrentWeatherLiveData(): LiveData<Forecast> {
         return currentWeatherLiveData
     }
 
-    override fun getfiveDaysForecastLiveData(): LiveData<List<Forecast>> {
+    override fun getFiveDaysForecastLiveData(): LiveData<List<Forecast>> {
         return fiveDaysForecastLiveData
     }
 
@@ -71,14 +71,20 @@ class MeteoCardViewModel : BaseCardViewModel(), IMeteoCardViewModel {
 
     private fun manageCurrentWeatherEvent(event: RxEvent.ForecastEvent?) {
         event?.let {e ->
-            if (!e.success) return
-            //TODO faire qqch avec l'event
+            currentWeatherLiveData.value = when {
+                e.success ->  e.forecast
+                else -> null
+            }
         }
     }
     private fun manageFiveDaysForecastEvent(event: RxEvent.ForecastListEvent?) {
         event?.let {e ->
-            if (!e.success) return
-            //TODO faire qqch avec l'event
+            //TODO ("remove useless data from the forecast list")
+           val fc = MeteoUtils.filterOneByDay(e.forecasts!!)
+            fiveDaysForecastLiveData.value = when {
+                e.success -> fc
+                else -> null
+            }
         }
     }
 }

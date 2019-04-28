@@ -4,7 +4,11 @@ import com.taishoberius.rised.cross.com.ForecastRetrofitBuilder
 
 object ForecastServer {
 
-    fun makeCurrentForecastService(): IForecastServer {
-        return ForecastRetrofitBuilder.getForecastRetrofit().create(IForecastServer::class.java)
+    fun makeCurrentWeatherForecastService(): IForecastServer {
+        return ForecastRetrofitBuilder.getCurrentWeatherRetrofit().create(IForecastServer::class.java)
+    }
+
+    fun makeFiceDaysForecastService(): IForecastServer {
+        return ForecastRetrofitBuilder.getFiveDaysForecastRetrofit().create(IForecastServer::class.java)
     }
 }
