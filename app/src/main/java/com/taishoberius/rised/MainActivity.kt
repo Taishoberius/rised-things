@@ -1,15 +1,15 @@
 package com.taishoberius.rised
 
-import android.app.Activity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.things.pio.PeripheralManager
 import com.taishoberius.rised.sensors.Arduino
 import com.taishoberius.rised.sensors.MotionSensor
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : Activity() {
+class MainActivity : AppCompatActivity() {
 
     private val TAG = "MainActivity"
     private lateinit var motionSensor: MotionSensor
