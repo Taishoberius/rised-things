@@ -1,16 +1,23 @@
 package com.taishoberius.rised
 
+import android.bluetooth.BluetoothDevice
+import android.media.MediaMetadata
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import com.google.android.things.pio.PeripheralManager
+import com.taishoberius.rised.bluetooth.BluetoothActivity
+import com.taishoberius.rised.bluetooth.delegates.BluetoothMediaDelegate
+import com.taishoberius.rised.bluetooth.delegates.BluetoothProfileDelegate
+import com.taishoberius.rised.bluetooth.models.BluetoothState
+import com.taishoberius.rised.bluetooth.models.MediaState
+import com.taishoberius.rised.cross.Rx.RxBus
+import com.taishoberius.rised.cross.Rx.RxEvent
 import com.taishoberius.rised.sensors.Arduino
 import com.taishoberius.rised.sensors.MotionSensor
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity() {
-
+class MainActivity : BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfileDelegate {
     private val TAG = "MainActivity"
     private lateinit var motionSensor: MotionSensor
     private lateinit var arduino: Arduino
@@ -32,10 +39,13 @@ class MainActivity : AppCompatActivity() {
         } else {
             Log.i(TAG, "List of available ports: $uartList")
         }
+
         initView()
         initSensors()
         initListener()
         sleepMode(false)
+        this.bluetoothMediaDelegate = this
+        this.bluetoothProfileDelegate = this
     }
 
     private fun initView() {
@@ -73,6 +83,34 @@ class MainActivity : AppCompatActivity() {
                 }
 
             })
+
+            connectedDevice?.run {
+                RxBus.publish(RxEvent.BluetoothProfileEvent(this, BluetoothState.CONNECTED))
+            }
         }
+    }
+
+    override fun onPlay() {
+        RxBus.publish(RxEvent.BluetoothMediaEvent(BluetoothState.MEDIA_PLAYING, null))
+    }
+
+    override fun onMediaStop() {
+        RxBus.publish(RxEvent.BluetoothMediaEvent(BluetoothState.MEDIA_PAUSED, null))
+    }
+
+    override fun onMediaDateChanged(mediaMetadata: MediaMetadata?) {
+        RxBus.publish(RxEvent.BluetoothMediaEvent(null, mediaMetadata))
+    }
+
+    override fun onConnected(device: BluetoothDevice?) {
+        RxBus.publish(RxEvent.BluetoothProfileEvent(device, BluetoothState.CONNECTED))
+    }
+
+    override fun onDisconnected(device: BluetoothDevice?) {
+        RxBus.publish(RxEvent.BluetoothProfileEvent(device, BluetoothState.DISCONNECTED))
+    }
+
+    override fun onStateChange(newState: Int) {
+
     }
 }

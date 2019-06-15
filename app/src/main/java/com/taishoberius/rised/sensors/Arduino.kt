@@ -9,7 +9,7 @@ import java.lang.NumberFormatException
 import java.lang.StringBuilder
 import java.nio.charset.Charset
 
-class Arduino(uartPin: String = "UART0") {
+class Arduino(uartPin: String = "UART1") {
     private val TAG = "Arduino"
 
     private val TEMPERATURE_INDICATOR = 't'

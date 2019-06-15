@@ -1,5 +1,9 @@
 package com.taishoberius.rised.cross.Rx
 
+import android.bluetooth.BluetoothDevice
+import android.media.MediaMetadata
+import com.taishoberius.rised.bluetooth.models.BluetoothState
+import com.taishoberius.rised.bluetooth.models.MediaState
 import com.taishoberius.rised.meteo.model.Forecast
 
 class RxEvent {
@@ -11,5 +15,15 @@ class RxEvent {
     class ForecastListEvent(
         val success: Boolean,
         val forecasts: List<Forecast>? = listOf()
+    )
+
+    data class BluetoothMediaEvent(
+        val state: BluetoothState?,
+        val media: MediaMetadata?
+    )
+
+    data class BluetoothProfileEvent(
+        var device: BluetoothDevice?,
+        val state: BluetoothState?
     )
 }

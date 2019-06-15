@@ -3,4 +3,6 @@
     <string name="current_temperature">Temperature : %.0f°C</string>
     <string name="current_humidity">Humidity : %d%%</string>
     <string name="meteo_today">Today</string>
+    <string name="no_device_connected">Aucun appareil connecté</string>
+    <string name="poiuyt">test</string>
 </resources>
