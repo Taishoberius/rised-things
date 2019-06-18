@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -38,6 +39,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -109,6 +112,8 @@ public class BluetoothActivity extends AppCompatActivity implements BluetoothDev
     private final BroadcastReceiver mSinkProfilePlaybackChangeReceiver = new BluetoothProfilePlaybackReceiver(this);
     private final BroadcastReceiver bluetoothMediaReceiver = new BluetoothMediaReceiver(this);
     private BroadcastReceiver bluetoothDeviceReceiver = new BluetoothDeviceReceiver(this);
+    private Timer controlTimer;
+    private BluetoothSocket deviceSocket;
 
     public BluetoothActivity() {
     }
@@ -314,15 +319,45 @@ public class BluetoothActivity extends AppCompatActivity implements BluetoothDev
     private Boolean connect(BluetoothDevice device) {
         final UUID uuid = device.getUuids()[0].getUuid();
         final BluetoothDevice remote = this.mBluetoothAdapter.getRemoteDevice(device.getAddress());
-        try {
-            final BluetoothSocket socket = (BluetoothSocket)remote.getClass().getMethod("createRfcommSocket", new Class[]{Integer.TYPE}).invoke(device, new Object[]{Integer.valueOf(1)});
 
-            socket.connect();
+        try {
+            deviceSocket = (BluetoothSocket)remote.getClass().getMethod("createRfcommSocket", new Class[]{Integer.TYPE}).invoke(device, new Object[]{Integer.valueOf(1)});
+
+            deviceSocket.connect();
         } catch (IOException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             return false;
         }
 
+        if (deviceSocket.isConnected()) {
+            launchSocketConnectionControl();
+        }
+
         return true;
+    }
+
+    private void launchSocketConnectionControl() {
+        controlTimer = new Timer();
+        controlTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    deviceSocket.getInputStream().read();
+                } catch (IOException e) {
+                    if (bluetoothProfileDelegate != null) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                bluetoothProfileDelegate.onDisconnected(null);
+                            }
+                        });
+                    }
+                    deviceSocket = null;
+                    controlTimer.cancel();
+                    controlTimer.purge();
+                }
+
+            }
+        }, 1000, 3000);
     }
 
     @Override
