@@ -21,6 +21,7 @@ class MainActivity : BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfi
     private val TAG = "MainActivity"
     private lateinit var motionSensor: MotionSensor
     private lateinit var arduino: Arduino
+    private var connectedDevice: BluetoothDevice? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,6 +64,15 @@ class MainActivity : BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfi
             }
 
         })
+
+        simulate_button.setOnClickListener {
+            findAndConnectNearestDevice()
+        }
+    }
+
+    private fun findAndConnectNearestDevice() {
+        if (connectedDevice != null) return
+        this.findAndConnectBondedDevice();
     }
 
     private fun sleepMode(sleep: Boolean) {
@@ -103,14 +113,17 @@ class MainActivity : BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfi
     }
 
     override fun onConnected(device: BluetoothDevice?) {
+        this.connectedDevice = device
         RxBus.publish(RxEvent.BluetoothProfileEvent(device, BluetoothState.CONNECTED))
     }
 
     override fun onDisconnected(device: BluetoothDevice?) {
+        this.connectedDevice = null
         RxBus.publish(RxEvent.BluetoothProfileEvent(device, BluetoothState.DISCONNECTED))
     }
 
     override fun onStateChange(newState: Int) {
-
+        if (newState == 0)
+            onDisconnected(null)
     }
 }
