@@ -1,13 +1,21 @@
 package com.taishoberius.rised.bluetooth;
 
+import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.BluetoothSocket;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.KeyEvent;
 
@@ -15,20 +23,26 @@ import com.google.android.things.bluetooth.BluetoothProfileManager;
 import com.google.android.things.contrib.driver.button.Button;
 import com.google.android.things.contrib.driver.button.ButtonInputDriver;
 import com.taishoberius.rised.bluetooth.delegates.BluetoothAdapterDelegate;
+import com.taishoberius.rised.bluetooth.delegates.BluetoothDeviceDelegate;
 import com.taishoberius.rised.bluetooth.delegates.BluetoothMediaDelegate;
 import com.taishoberius.rised.bluetooth.delegates.BluetoothPlaybackDelegate;
 import com.taishoberius.rised.bluetooth.delegates.BluetoothProfileDelegate;
 import com.taishoberius.rised.bluetooth.models.A2dpSinkHelper;
 import com.taishoberius.rised.bluetooth.models.BoardDefaults;
+import com.taishoberius.rised.bluetooth.receivers.BluetoothDeviceReceiver;
 import com.taishoberius.rised.bluetooth.receivers.BluetoothMediaReceiver;
 import com.taishoberius.rised.bluetooth.receivers.BluetoothProfilePlaybackReceiver;
 import com.taishoberius.rised.bluetooth.receivers.BluetoothStateReceiver;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.UUID;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -37,6 +51,10 @@ public class BluetoothActivity extends AppCompatActivity {
     public BluetoothProfileDelegate bluetoothProfileDelegate;
     public BluetoothPlaybackDelegate bluetoothAudioDelegate;
     public BluetoothMediaDelegate bluetoothMediaDelegate;
+    public BluetoothDeviceDelegate bluetoothDeviceDelegate;
+
+    private UUID DEFAULT_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
 
     private static final String TAG = "A2dpSinkActivity";
 
@@ -93,6 +111,13 @@ public class BluetoothActivity extends AppCompatActivity {
      */
 
     private final BroadcastReceiver mSinkProfilePlaybackChangeReceiver = new BluetoothProfilePlaybackReceiver(this);
+    private final BroadcastReceiver bluetoothMediaReceiver = new BluetoothMediaReceiver(this);
+    private BroadcastReceiver bluetoothDeviceReceiver = new BluetoothDeviceReceiver(this);
+    private Timer controlTimer;
+    private BluetoothSocket deviceSocket;
+
+    public BluetoothActivity() {
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,7 +140,9 @@ public class BluetoothActivity extends AppCompatActivity {
                 A2dpSinkHelper.ACTION_CONNECTION_STATE_CHANGED));
         registerReceiver(mSinkProfilePlaybackChangeReceiver, new IntentFilter(
                 A2dpSinkHelper.ACTION_PLAYING_STATE_CHANGED));
-        registerReceiver(new BluetoothMediaReceiver(this), new IntentFilter(TRACK_EVENT_INTENT));
+        registerReceiver(this.bluetoothMediaReceiver, new IntentFilter(TRACK_EVENT_INTENT));
+        registerReceiver(this.bluetoothDeviceReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+
 
         if (mBluetoothAdapter.isEnabled()) {
             if (this.bluetoothAdapterDelegate != null) {
@@ -128,12 +155,6 @@ public class BluetoothActivity extends AppCompatActivity {
             }
             mBluetoothAdapter.enable();
         }
-    }
-
-    public BluetoothDevice getConnectedDevice() {
-        ArrayList<BluetoothDevice> devices = new ArrayList<>(mBluetoothAdapter.getBondedDevices());
-        Log.d("ADAPTER", devices.get(0).toString());
-        return null;
     }
 
     @Override
@@ -166,6 +187,8 @@ public class BluetoothActivity extends AppCompatActivity {
         unregisterReceiver(mAdapterStateChangeReceiver);
         unregisterReceiver(mSinkProfileStateChangeReceiver);
         unregisterReceiver(mSinkProfilePlaybackChangeReceiver);
+        unregisterReceiver(this.bluetoothMediaReceiver);
+        unregisterReceiver(this.bluetoothDeviceReceiver);
 
         if (mA2DPSinkProxy != null) {
             mBluetoothAdapter.closeProfileProxy(A2dpSinkHelper.A2DP_SINK_PROFILE,
@@ -279,5 +302,62 @@ public class BluetoothActivity extends AppCompatActivity {
         } catch (Exception ex) {
             System.out.println("ignored exception");
         }
+    }
+
+    public  void findAndConnectBondedDevice() {
+        enableDiscoverable();
+        this.mBluetoothAdapter.cancelDiscovery();
+        final ArrayList<BluetoothDevice> devices = new ArrayList<>(this.mBluetoothAdapter.getBondedDevices());
+        for (BluetoothDevice device: devices) {
+            if (connect(device)) {
+                if (this.bluetoothProfileDelegate != null)
+                    this.bluetoothProfileDelegate.onConnected(device);
+                return;
+            }
+        }
+    }
+
+    private Boolean connect(BluetoothDevice device) {
+        final UUID uuid = device.getUuids()[0].getUuid();
+        final BluetoothDevice remote = this.mBluetoothAdapter.getRemoteDevice(device.getAddress());
+
+        try {
+            deviceSocket = (BluetoothSocket)remote.getClass().getMethod("createRfcommSocket", new Class[]{Integer.TYPE}).invoke(device, new Object[]{Integer.valueOf(1)});
+
+            deviceSocket.connect();
+        } catch (IOException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            return false;
+        }
+
+        if (deviceSocket.isConnected()) {
+            launchSocketConnectionControl();
+        }
+
+        return true;
+    }
+
+    private void launchSocketConnectionControl() {
+        controlTimer = new Timer();
+        controlTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    deviceSocket.getInputStream().read();
+                } catch (IOException e) {
+                    if (bluetoothProfileDelegate != null) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                bluetoothProfileDelegate.onDisconnected(null);
+                            }
+                        });
+                    }
+                    deviceSocket = null;
+                    controlTimer.cancel();
+                    controlTimer.purge();
+                }
+
+            }
+        }, 1000, 3000);
     }
 }

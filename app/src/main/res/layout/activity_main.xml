@@ -44,6 +44,15 @@
         <include layout="@layout/bluetooth"/>
     </com.taishoberius.rised.bluetooth.view.BluetoothCardView>
 
+    <Button
+        android:id="@+id/simulate_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Simulate presence"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
     <View
         android:id="@+id/sleep_mode"
         android:layout_width="match_parent"
