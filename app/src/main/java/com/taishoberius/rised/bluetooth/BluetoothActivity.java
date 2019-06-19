@@ -1,5 +1,6 @@
 package com.taishoberius.rised.bluetooth;
 
+import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -45,12 +46,12 @@ import java.util.UUID;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class BluetoothActivity extends AppCompatActivity implements BluetoothDeviceDelegate {
+public class BluetoothActivity extends AppCompatActivity {
     public BluetoothAdapterDelegate bluetoothAdapterDelegate;
     public BluetoothProfileDelegate bluetoothProfileDelegate;
     public BluetoothPlaybackDelegate bluetoothAudioDelegate;
     public BluetoothMediaDelegate bluetoothMediaDelegate;
-    public BluetoothDeviceDelegate bluetoothDeviceDelegate = this;
+    public BluetoothDeviceDelegate bluetoothDeviceDelegate;
 
     private UUID DEFAULT_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
@@ -358,16 +359,5 @@ public class BluetoothActivity extends AppCompatActivity implements BluetoothDev
 
             }
         }, 1000, 3000);
-    }
-
-    @Override
-    public void onDeviceDiscovered(BluetoothDevice device) {
-        final ArrayList<BluetoothDevice> bondedDevices = new ArrayList<>(this.mBluetoothAdapter.getBondedDevices());
-        for (BluetoothDevice bondedDevice : bondedDevices) {
-            if (bondedDevice.getAddress().equals(device.getAddress())) {
-                device.connectGatt(this, true, null);
-                return;
-            }
-        }
     }
 }
