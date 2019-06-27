@@ -7,6 +7,12 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothSocket;
+import android.bluetooth.le.AdvertiseCallback;
+import android.bluetooth.le.AdvertiseData;
+import android.bluetooth.le.AdvertiseSettings;
+import android.bluetooth.le.AdvertiseSettings.Builder;
+import android.bluetooth.le.AdvertisingSetParameters;
+import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.content.BroadcastReceiver;
@@ -53,7 +59,7 @@ public class BluetoothActivity extends AppCompatActivity {
     public BluetoothMediaDelegate bluetoothMediaDelegate;
     public BluetoothDeviceDelegate bluetoothDeviceDelegate;
 
-    private UUID DEFAULT_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    private UUID SERVICE_UUID = UUID.fromString("795090c7-420d-4048-a24e-18e60180e23c");
 
 
     private static final String TAG = "A2dpSinkActivity";
@@ -115,6 +121,7 @@ public class BluetoothActivity extends AppCompatActivity {
     private BroadcastReceiver bluetoothDeviceReceiver = new BluetoothDeviceReceiver(this);
     private Timer controlTimer;
     private BluetoothSocket deviceSocket;
+    private BluetoothLeAdvertiser mBluetoothLeAdvertiser;
 
     public BluetoothActivity() {
     }
@@ -227,6 +234,7 @@ public class BluetoothActivity extends AppCompatActivity {
         setupBTProfiles();
         Log.d(TAG, "Set up Bluetooth Adapter name and profile");
         mBluetoothAdapter.setName(ADAPTER_FRIENDLY_NAME);
+        startAdvertising();
         mBluetoothAdapter.getProfileProxy(this, new BluetoothProfile.ServiceListener() {
             @Override
             public void onServiceConnected(int profile, BluetoothProfile proxy) {
@@ -241,6 +249,17 @@ public class BluetoothActivity extends AppCompatActivity {
         //configureButton();
     }
 
+    private AdvertiseCallback mAdvertiseCallback = new AdvertiseCallback() {
+        @Override
+        public void onStartSuccess(AdvertiseSettings settingsInEffect) {
+            Log.i(TAG, "LE Advertise Started.");
+        }
+
+        @Override
+        public void onStartFailure(int errorCode) {
+            Log.w(TAG, "LE Advertise Failed: " + errorCode);
+        }
+    };
     /**
      * Enable the current {@link BluetoothAdapter} to be discovered (available for pairing) for
      * the next {@link #DISCOVERABLE_TIMEOUT_MS} ms.
@@ -306,6 +325,7 @@ public class BluetoothActivity extends AppCompatActivity {
 
     public  void findAndConnectBondedDevice() {
         enableDiscoverable();
+        startAdvertising();
         this.mBluetoothAdapter.cancelDiscovery();
         final ArrayList<BluetoothDevice> devices = new ArrayList<>(this.mBluetoothAdapter.getBondedDevices());
         for (BluetoothDevice device: devices) {
@@ -315,6 +335,26 @@ public class BluetoothActivity extends AppCompatActivity {
                 return;
             }
         }
+    }
+
+    private void startAdvertising() {
+        AdvertiseSettings settings = new AdvertiseSettings.Builder()
+                .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
+                .setConnectable(true)
+                .setTimeout(0)
+                .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM)
+                .build();
+
+// Defines which service to advertise.
+        AdvertiseData data = new AdvertiseData.Builder()
+                .setIncludeDeviceName(true)
+                .setIncludeTxPowerLevel(false)
+                .addServiceUuid(new ParcelUuid(SERVICE_UUID))
+                .build();
+
+// Starts advertising.
+        mBluetoothLeAdvertiser = mBluetoothAdapter.getBluetoothLeAdvertiser();
+        mBluetoothLeAdvertiser.startAdvertising(settings, data, mAdvertiseCallback);
     }
 
     private Boolean connect(BluetoothDevice device) {
