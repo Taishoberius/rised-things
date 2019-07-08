@@ -5,6 +5,12 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattServer;
+import android.bluetooth.BluetoothGattServerCallback;
+import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothSocket;
 import android.bluetooth.le.AdvertiseCallback;
@@ -19,6 +25,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelUuid;
@@ -42,6 +50,7 @@ import com.taishoberius.rised.bluetooth.receivers.BluetoothStateReceiver;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -235,6 +244,7 @@ public class BluetoothActivity extends AppCompatActivity {
         Log.d(TAG, "Set up Bluetooth Adapter name and profile");
         mBluetoothAdapter.setName(ADAPTER_FRIENDLY_NAME);
         startAdvertising();
+        startServer();
         mBluetoothAdapter.getProfileProxy(this, new BluetoothProfile.ServiceListener() {
             @Override
             public void onServiceConnected(int profile, BluetoothProfile proxy) {
@@ -357,6 +367,53 @@ public class BluetoothActivity extends AppCompatActivity {
         mBluetoothLeAdvertiser.startAdvertising(settings, data, mAdvertiseCallback);
     }
 
+    void startServer() {
+        BluetoothManager manager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+        BluetoothGattServer gattServer = null;
+        if (manager != null) {
+            gattServer = manager.openGattServer(this, gattServerCallback);
+        }
+
+        if (gattServer != null) {
+            BluetoothGattService service = new BluetoothGattService(SERVICE_UUID, BluetoothGattService.SERVICE_TYPE_PRIMARY);
+            service.addCharacteristic(new BluetoothGattCharacteristic(SERVICE_UUID, BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE, BluetoothGattCharacteristic.PERMISSION_WRITE));
+            gattServer.addService(service);
+        }
+    }
+
+    private BluetoothGattServerCallback gattServerCallback = new BluetoothGattServerCallback() {
+        @Override
+        public void onCharacteristicReadRequest(BluetoothDevice device, int requestId, int offset, BluetoothGattCharacteristic characteristic) {
+            super.onCharacteristicReadRequest(device, requestId, offset, characteristic);
+        }
+
+        @Override
+        public void onDescriptorReadRequest(BluetoothDevice device, int requestId, int offset, BluetoothGattDescriptor descriptor) {
+            super.onDescriptorReadRequest(device, requestId, offset, descriptor);
+        }
+
+        @Override
+        public void onCharacteristicWriteRequest(BluetoothDevice device, int requestId, BluetoothGattCharacteristic characteristic, boolean preparedWrite, boolean responseNeeded, int offset, byte[] value) {
+            super.onCharacteristicWriteRequest(device, requestId, characteristic, preparedWrite, responseNeeded, offset, value);
+            String res = new String(value, Charset.forName("UTF-8"));
+            if (res.contains("conf:")) {
+                final String[] strings = res.split(" ");
+                String ssid = strings[1];
+                String password = strings[2];
+
+                WifiManager manager = (WifiManager) getSystemService(WIFI_SERVICE);
+                WifiConfiguration wifiConfiguration = new WifiConfiguration();
+
+                wifiConfiguration.SSID= String.format("\"%s\"", ssid);
+                wifiConfiguration.preSharedKey = String.format("\"%s\"", password);
+
+                final int network = manager.addNetwork(wifiConfiguration);
+                manager.disconnect();
+                manager.enableNetwork(network, true);
+                manager.reconnect();
+            }
+        }
+    };
     private Boolean connect(BluetoothDevice device) {
         final UUID uuid = device.getUuids()[0].getUuid();
         final BluetoothDevice remote = this.mBluetoothAdapter.getRemoteDevice(device.getAddress());
