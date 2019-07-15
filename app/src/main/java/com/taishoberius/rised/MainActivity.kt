@@ -1,6 +1,7 @@
 package com.taishoberius.rised
 
 import android.bluetooth.BluetoothDevice
+import android.content.Context
 import android.media.MediaMetadata
 import android.os.Bundle
 import android.util.Log
@@ -10,18 +11,30 @@ import com.taishoberius.rised.bluetooth.BluetoothActivity
 import com.taishoberius.rised.bluetooth.delegates.BluetoothMediaDelegate
 import com.taishoberius.rised.bluetooth.delegates.BluetoothProfileDelegate
 import com.taishoberius.rised.bluetooth.models.BluetoothState
-import com.taishoberius.rised.bluetooth.models.MediaState
 import com.taishoberius.rised.cross.Rx.RxBus
 import com.taishoberius.rised.cross.Rx.RxEvent
+import com.taishoberius.rised.main.services.PreferenceService
+import com.taishoberius.rised.main.services.model.Preferences
 import com.taishoberius.rised.sensors.Arduino
 import com.taishoberius.rised.sensors.MotionSensor
 import kotlinx.android.synthetic.main.activity_main.*
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.moshi.MoshiConverterFactory
 
-class MainActivity : BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfileDelegate {
+class MainActivity: BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfileDelegate {
     private val TAG = "MainActivity"
     private lateinit var motionSensor: MotionSensor
     private lateinit var arduino: Arduino
     private var connectedDevice: BluetoothDevice? = null
+    private var userPreferences: List<Preferences>? = null
+    private var preference: Preferences? = null
+    set(value) {
+        value?.also { RxBus.publish(RxEvent.PreferenceEvent(preference = it)) }
+    }
+    private lateinit var retrofit: Retrofit
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,8 +58,31 @@ class MainActivity : BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfi
         initSensors()
         initListener()
         sleepMode(false)
+        this.getUserPreferences()
         this.bluetoothMediaDelegate = this
         this.bluetoothProfileDelegate = this
+        this.retrofit = Retrofit.Builder()
+            .baseUrl("https://us-central1-erised-e4dae.cloudfunctions.net")
+            .addConverterFactory(MoshiConverterFactory.create())
+            .build()
+    }
+
+    private fun getUserPreferences() {
+        retrofit
+            .create(PreferenceService::class.java)
+            .getPreferences()
+            .enqueue(object: Callback<List<Preferences>> {
+                override fun onFailure(call: Call<List<Preferences>>, t: Throwable) {}
+
+                override fun onResponse(
+                    call: Call<List<Preferences>>,
+                    response: Response<List<Preferences>>
+                ) {
+                    response.body()?.also {
+                        this@MainActivity.userPreferences = it
+                    }
+                }
+            })
     }
 
     private fun initView() {
@@ -114,7 +150,58 @@ class MainActivity : BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfi
 
     override fun onConnected(device: BluetoothDevice?) {
         this.connectedDevice = device
+        getPreferenceForDevice(device?.name)
         RxBus.publish(RxEvent.BluetoothProfileEvent(device, BluetoothState.CONNECTED))
+    }
+
+    private fun getPreferenceForDevice(name: String?) {
+        val target = name ?: ""
+        if (target.isEmpty()) return
+
+
+        val id = getPreferenceIdIfExist(target)
+
+        if (id.isEmpty()) {
+            userPreferences?.also {
+                val first = it.first { preferences -> preferences.deviceName == name }
+                this.preference = first
+                savePreferenceId(first.deviceName, first.id)
+            }
+        }
+
+        getPreferenceWithId(id)
+    }
+
+    private fun savePreferenceId(name: String?, id: String?) {
+        if (id == null) return
+        if (name == null) return
+
+        val prefs = getSharedPreferences("ids", Context.MODE_PRIVATE)
+        prefs.edit().putString(name, id).apply()
+    }
+
+    private fun getPreferenceWithId(id: String) {
+        retrofit.create(PreferenceService::class.java)
+            .getPreference(id)
+            .enqueue(object : Callback<Preferences> {
+                override fun onFailure(call: Call<Preferences>, t: Throwable) {}
+
+                override fun onResponse(call: Call<Preferences>, response: Response<Preferences>) {
+                    response.body().also {
+                        if (it != null) this@MainActivity.preference = it
+                    }
+                }
+            })
+    }
+
+    private fun getPreferenceIdIfExist(name: String): String {
+        val prefs = getSharedPreferences("ids", Context.MODE_PRIVATE)
+        if (prefs.contains(name)) {
+            val s = prefs.getString(name, "")
+            return s
+        }
+
+        return ""
     }
 
     override fun onDisconnected(device: BluetoothDevice?) {
