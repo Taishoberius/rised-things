@@ -9,6 +9,7 @@ import com.taishoberius.rised.cross.Rx.RxEvent
 import com.taishoberius.rised.cross.com.ForecastRetrofitBuilder
 import com.taishoberius.rised.cross.com.ServiceManager
 import com.taishoberius.rised.cross.utils.MeteoUtils
+import com.taishoberius.rised.main.services.model.Preferences
 import com.taishoberius.rised.meteo.model.Forecast
 import io.reactivex.disposables.Disposable
 
@@ -20,6 +21,7 @@ class MeteoCardViewModel : BaseCardViewModel(), IMeteoCardViewModel {
     private val TAG = "MeteoCardViewModel"
     private var currentWeatherDisposable: Disposable
     private var fiveDaysForecastDisposable: Disposable
+    private var currentPreferenceDisposable: Disposable
 
     private val currentWeatherLiveData = MutableLiveData<Forecast>()
     private val fiveDaysForecastLiveData = MutableLiveData<List<Forecast>>()
@@ -35,6 +37,13 @@ class MeteoCardViewModel : BaseCardViewModel(), IMeteoCardViewModel {
         fiveDaysForecastDisposable = RxBus.listen(RxEvent.ForecastListEvent::class.java).subscribe { event ->
             manageFiveDaysForecastEvent(event)
         }
+        currentPreferenceDisposable = RxBus.listen(RxEvent.PreferenceEvent::class.java).subscribe {
+            manageCurrentPreference(it)
+        }
+    }
+
+    private fun manageCurrentPreference(preferenceEvent: RxEvent.PreferenceEvent?) {
+
     }
 
     //================================================================================
@@ -45,6 +54,7 @@ class MeteoCardViewModel : BaseCardViewModel(), IMeteoCardViewModel {
         super.onCardViewDetached()
         if (!currentWeatherDisposable.isDisposed) currentWeatherDisposable.dispose()
         if (!fiveDaysForecastDisposable.isDisposed) fiveDaysForecastDisposable.dispose()
+        if (!currentPreferenceDisposable.isDisposed) currentPreferenceDisposable.dispose()
     }
 
     //================================================================================
