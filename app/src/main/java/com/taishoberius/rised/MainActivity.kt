@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.media.MediaMetadata
 import android.os.Bundle
+import android.preference.Preference
 import android.util.Log
 import android.view.View
 import com.google.android.things.pio.PeripheralManager
@@ -31,9 +32,32 @@ class MainActivity: BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfil
     private var connectedDevice: BluetoothDevice? = null
     private var userPreferences: List<Preferences>? = null
     private var preference: Preferences? = null
-    set(value) {
-        value?.also { RxBus.publish(RxEvent.PreferenceEvent(preference = it)) }
+        set(value) {
+            value?.also {
+                setFirebaseToken(it)
+                RxBus.publish(RxEvent.PreferenceEvent(preference = it))
+            }
+            field = value
+        }
+
+    private fun setFirebaseToken(preferences: Preferences) {
+        if (preferences.token != null && preferences.token == "firebaseToken") return
+        val id = preferences.id ?: return
+
+        preferences.token = "firebaseToken"
+        retrofit.create(PreferenceService::class.java)
+            .updPreference(id, preferences)
+            .enqueue(object: Callback<Preferences> {
+                override fun onFailure(call: Call<Preferences>, t: Throwable) {
+                    
+                }
+
+                override fun onResponse(call: Call<Preferences>, response: Response<Preferences>) {
+
+                }
+            })
     }
+
     private lateinit var retrofit: Retrofit
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -146,6 +170,7 @@ class MainActivity: BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfil
 
     override fun onConnected(device: BluetoothDevice?) {
         this.connectedDevice = device
+
         getPreferenceForDevice(device?.name)
         RxBus.publish(RxEvent.BluetoothProfileEvent(device, BluetoothState.CONNECTED))
     }

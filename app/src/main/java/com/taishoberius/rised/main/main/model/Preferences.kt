@@ -10,5 +10,6 @@ data class Preferences (
     val address: String?,
     val transportType: String?,
     val workAddress: String?,
-    val id: String?
+    val id: String?,
+    var token: String?
 )
