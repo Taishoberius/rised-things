@@ -1,13 +1,12 @@
 package com.taishoberius.rised.meteo.adapter
 
+import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.taishoberius.rised.meteo.model.Forecast
-import android.view.LayoutInflater
-import com.taishoberius.rised.R
 import com.taishoberius.rised.cross.utils.MeteoUtils
 import com.taishoberius.rised.cross.utils.MyDateUtils
-import kotlinx.android.synthetic.main.activity_main.view.*
+import com.taishoberius.rised.meteo.model.Forecast
+import com.taishoberius.rised.R
 import kotlinx.android.synthetic.main.meteo_item.view.*
 
 

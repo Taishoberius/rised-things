@@ -2,7 +2,6 @@ package com.taishoberius.rised.meteo.view
 
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry

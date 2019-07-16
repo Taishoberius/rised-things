@@ -4,6 +4,7 @@ import android.text.TextUtils
 import androidx.annotation.DrawableRes
 import com.taishoberius.rised.R
 import com.taishoberius.rised.meteo.model.Forecast
+import kotlinx.coroutines.newSingleThreadContext
 import kotlin.math.roundToInt
 
 object MeteoUtils {
@@ -41,11 +42,11 @@ object MeteoUtils {
         }
     }
 
-    fun filterOneByDay(fullList: List<Forecast>) : List<Forecast> {
+    fun filterOneByDay(fullList: List<Forecast>, nbDay: Int) : List<Forecast> {
         val newList = mutableListOf<Forecast>()
 
         fullList.forEach {fcast ->
-            if (!newList.contains(fcast.dt_txt)) {
+            if (!newList.contains(fcast.dt_txt) && newList.size < nbDay) {
                 newList.add(fcast)
             }
         }
