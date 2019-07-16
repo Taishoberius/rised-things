@@ -41,6 +41,7 @@ class MainActivity: BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfil
         }
 
     private fun setFirebaseToken(preferences: Preferences) {
+        Log.w(TAG, "setFirebaseToken")
         if (preferences.token != null && preferences.token == "firebaseToken") return
         val id = preferences.id ?: return
 
@@ -49,7 +50,7 @@ class MainActivity: BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfil
             .updPreference(id, preferences)
             .enqueue(object: Callback<Preferences> {
                 override fun onFailure(call: Call<Preferences>, t: Throwable) {
-                    
+
                 }
 
                 override fun onResponse(call: Call<Preferences>, response: Response<Preferences>) {
@@ -78,6 +79,10 @@ class MainActivity: BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfil
             Log.i(TAG, "List of available ports: $uartList")
         }
 
+        this.retrofit = Retrofit.Builder()
+            .baseUrl("https://us-central1-erised-e4dae.cloudfunctions.net")
+            .addConverterFactory(MoshiConverterFactory.create())
+            .build()
         initView()
         initSensors()
         initListener()
@@ -85,10 +90,6 @@ class MainActivity: BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfil
         this.getUserPreferences()
         this.bluetoothMediaDelegate = this
         this.bluetoothProfileDelegate = this
-        this.retrofit = Retrofit.Builder()
-            .baseUrl("https://us-central1-erised-e4dae.cloudfunctions.net")
-            .addConverterFactory(MoshiConverterFactory.create())
-            .build()
     }
 
     private fun getUserPreferences() {
@@ -103,6 +104,7 @@ class MainActivity: BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfil
                     response: Response<List<Preferences>>
                 ) {
                     response.body()?.also {
+                        Log.w(this@MainActivity.TAG, it.toString())
                         this@MainActivity.userPreferences = it
                     }
                 }
@@ -176,15 +178,18 @@ class MainActivity: BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfil
     }
 
     private fun getPreferenceForDevice(name: String?) {
+        Log.w(TAG, name)
         val target = name ?: ""
         if (target.isEmpty()) return
 
 
         val id = getPreferenceIdIfExist(target)
+        Log.w(TAG, "id: $id")
 
         if (id.isEmpty()) {
             userPreferences?.also {
                 val first = it.first { preferences -> preferences.deviceName == name }
+                Log.w(TAG, first.toString())
                 this.preference = first
                 savePreferenceId(first.deviceName, first.id)
             }
