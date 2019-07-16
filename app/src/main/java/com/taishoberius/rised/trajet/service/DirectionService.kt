@@ -1,10 +1,9 @@
-package com.taishoberius.rised.trajet
+package com.taishoberius.rised.trajet.service
 
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
-import Json4Kotlin_Base
-import Legs
+import com.taishoberius.rised.trajet.model.Json4Kotlin_Base
 
 public interface DirectionService {
 

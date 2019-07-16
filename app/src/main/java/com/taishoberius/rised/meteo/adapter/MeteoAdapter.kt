@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.taishoberius.rised.cross.utils.MeteoUtils
 import com.taishoberius.rised.cross.utils.MyDateUtils
 import com.taishoberius.rised.meteo.model.Forecast
+import com.taishoberius.rised.R
 import kotlinx.android.synthetic.main.meteo_item.view.*
 
 

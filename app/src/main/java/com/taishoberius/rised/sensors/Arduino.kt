@@ -36,10 +36,10 @@ class Arduino(uartPin: String = "UART1") {
             override fun onUartDeviceDataAvailable(uart: UartDevice): Boolean {
                 // Read available data from the UART device
                 try {
-                    var data = readUartBuffer(uart).trim()
+                    val data = readUartBuffer(uart).trim()
                     Log.v(TAG, "Received $data from Arduino")
 
-                    var array = data.split('/')
+                    data.split('/')
                     try {
                         listener?.onTemperatureChangedChanged(data.split('/')[0].toFloat())
                         listener?.onHumidityChanged(data.split('/')[1].toFloat())

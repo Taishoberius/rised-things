@@ -1,4 +1,4 @@
-package com.taishoberius.rised.trajet
+package com.taishoberius.rised.trajet.service
 
 object URLManager {
 
