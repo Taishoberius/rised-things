@@ -1,4 +1,4 @@
-package com.taishoberius.rised.main.services.model
+package com.taishoberius.rised.main.main.model
 
 data class Preferences (
     val deviceName: String?,

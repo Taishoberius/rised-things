@@ -1,6 +1,6 @@
-package com.taishoberius.rised.main.services
+package com.taishoberius.rised.main.main.services
 
-import com.taishoberius.rised.main.services.model.Preferences
+import com.taishoberius.rised.main.main.model.Preferences
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query

@@ -1,15 +1,11 @@
 package com.taishoberius.rised.trajet.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.taishoberius.rised.cross.Rx.RxBus
 import com.taishoberius.rised.cross.Rx.RxEvent
-import com.taishoberius.rised.cross.com.URLManager
-import com.taishoberius.rised.cross.viewmodel.BaseCardViewModel
 import com.taishoberius.rised.cross.viewmodel.IBaseCardViewModel
-import com.taishoberius.rised.main.services.model.Preferences
-import com.taishoberius.rised.main.services.utils.AddressUtil
+import com.taishoberius.rised.main.main.utils.AddressUtil
 import com.taishoberius.rised.trajet.model.Json4Kotlin_Base
 import com.taishoberius.rised.trajet.service.DirectionService
 import io.reactivex.disposables.Disposable
@@ -19,7 +15,6 @@ import okhttp3.Request
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
 import retrofit2.Retrofit.*
 import retrofit2.converter.gson.GsonConverterFactory
 

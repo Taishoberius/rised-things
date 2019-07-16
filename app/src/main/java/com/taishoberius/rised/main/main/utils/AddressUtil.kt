@@ -1,4 +1,4 @@
-package com.taishoberius.rised.main.services.utils
+package com.taishoberius.rised.main.main.utils
 
 class AddressUtil {
     companion object {

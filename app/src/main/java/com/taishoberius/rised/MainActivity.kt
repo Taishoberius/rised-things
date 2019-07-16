@@ -13,8 +13,8 @@ import com.taishoberius.rised.bluetooth.delegates.BluetoothProfileDelegate
 import com.taishoberius.rised.bluetooth.models.BluetoothState
 import com.taishoberius.rised.cross.Rx.RxBus
 import com.taishoberius.rised.cross.Rx.RxEvent
-import com.taishoberius.rised.main.services.PreferenceService
-import com.taishoberius.rised.main.services.model.Preferences
+import com.taishoberius.rised.main.main.model.Preferences
+import com.taishoberius.rised.main.main.services.PreferenceService
 import com.taishoberius.rised.sensors.Arduino
 import com.taishoberius.rised.sensors.MotionSensor
 import kotlinx.android.synthetic.main.activity_main.*
@@ -98,12 +98,7 @@ class MainActivity: BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfil
             override fun onValueChanged(newValue: Boolean) {
                 sleepMode(!newValue)
             }
-
         })
-
-        simulate_button.setOnClickListener {
-            findAndConnectNearestDevice()
-        }
     }
 
     private fun findAndConnectNearestDevice() {
@@ -118,6 +113,7 @@ class MainActivity: BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfil
             arduino.setOnValueChangedListener(null)
         } else {
             Log.i(TAG, "Exit sleep mode")
+            findAndConnectNearestDevice()
             sleep_mode.visibility = View.GONE
             arduino.setOnValueChangedListener(object : Arduino.ValueChangedListener {
                 override fun onTemperatureChangedChanged(newValue: Float) {

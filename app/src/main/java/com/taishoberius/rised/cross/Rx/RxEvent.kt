@@ -3,7 +3,7 @@ package com.taishoberius.rised.cross.Rx
 import android.bluetooth.BluetoothDevice
 import android.media.MediaMetadata
 import com.taishoberius.rised.bluetooth.models.BluetoothState
-import com.taishoberius.rised.main.services.model.Preferences
+import com.taishoberius.rised.main.main.model.Preferences
 import com.taishoberius.rised.meteo.model.Forecast
 
 class RxEvent {

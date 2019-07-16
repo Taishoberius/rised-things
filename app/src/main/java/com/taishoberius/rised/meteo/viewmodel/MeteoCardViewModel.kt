@@ -7,8 +7,8 @@ import com.taishoberius.rised.cross.Rx.RxEvent
 import com.taishoberius.rised.cross.com.ServiceManager
 import com.taishoberius.rised.cross.utils.MeteoUtils
 import com.taishoberius.rised.cross.viewmodel.BaseCardViewModel
-import com.taishoberius.rised.main.services.model.Preferences
-import com.taishoberius.rised.main.services.utils.AddressUtil
+import com.taishoberius.rised.main.main.model.Preferences
+import com.taishoberius.rised.main.main.utils.AddressUtil
 import com.taishoberius.rised.meteo.model.Forecast
 import io.reactivex.disposables.Disposable
 
