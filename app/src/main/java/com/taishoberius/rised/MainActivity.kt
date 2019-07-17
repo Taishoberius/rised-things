@@ -21,6 +21,7 @@ import com.taishoberius.rised.main.main.model.Preferences
 import com.taishoberius.rised.main.main.services.PreferenceService
 import com.taishoberius.rised.sensors.Arduino
 import com.taishoberius.rised.sensors.MotionSensor
+import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_main.*
 import retrofit2.Call
 import retrofit2.Callback
@@ -29,26 +30,21 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
 class MainActivity: BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfileDelegate {
+    private lateinit var preferenceDisposable: Disposable
+    private var token: String = ""
     private val TAG = "MainActivity"
     private lateinit var motionSensor: MotionSensor
     private lateinit var arduino: Arduino
     private var connectedDevice: BluetoothDevice? = null
     private var userPreferences: List<Preferences>? = null
     private var preference: Preferences? = null
-        set(value) {
-            value?.also {
-                setFirebaseToken(it)
-                RxBus.publish(RxEvent.PreferenceEvent(preference = it))
-            }
-            field = value
-        }
 
     private fun setFirebaseToken(preferences: Preferences) {
         Log.w(TAG, "setFirebaseToken")
-        if (preferences.token != null && preferences.token == "firebaseToken") return
+        if (preferences.token != null && preferences.token == this.token) return
         val id = preferences.id ?: return
 
-        preferences.token = "firebaseToken"
+        preferences.token = this.token
         retrofit.create(PreferenceService::class.java)
             .updPreference(id, preferences)
             .enqueue(object: Callback<Preferences> {
@@ -57,7 +53,7 @@ class MainActivity: BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfil
                 }
 
                 override fun onResponse(call: Call<Preferences>, response: Response<Preferences>) {
-
+                    Log.w(TAG, "successfully set token")
                 }
             })
     }
@@ -102,11 +98,18 @@ class MainActivity: BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfil
                 }
 
                 // Get new Instance ID token
-                val token = task.result?.token
+                this.token = task.result?.token ?: ""
 
                 // Log and toast
                 Log.d("LETOKEN", token)
             })
+
+        preferenceDisposable = RxBus.listen(RxEvent.PreferenceNotificationEvent::class.java).subscribe {
+            Log.w(TAG, "preference notification receivced " + this.preference?.id + this.preference + " " + it.preferenceUpdatedId)
+            if (preference?.id == it.preferenceUpdatedId) {
+                getPreferenceWithId(it.preferenceUpdatedId);
+            }
+        }
     }
 
     private fun getUserPreferences() {
@@ -227,11 +230,18 @@ class MainActivity: BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfil
         retrofit.create(PreferenceService::class.java)
             .getPreference(id)
             .enqueue(object : Callback<Preferences> {
-                override fun onFailure(call: Call<Preferences>, t: Throwable) {}
+                override fun onFailure(call: Call<Preferences>, t: Throwable) {
+                    Log.w(TAG, "failed retrieve preference")
+                }
 
                 override fun onResponse(call: Call<Preferences>, response: Response<Preferences>) {
                     response.body().also {
-                        if (it != null) this@MainActivity.preference = it
+                        Log.w(TAG, "fetched preference for id $it")
+                        if (it != null) {
+                            this@MainActivity.preference = it
+                            setFirebaseToken(it)
+                            RxBus.publish(RxEvent.PreferenceEvent(it))
+                        }
                     }
                 }
             })

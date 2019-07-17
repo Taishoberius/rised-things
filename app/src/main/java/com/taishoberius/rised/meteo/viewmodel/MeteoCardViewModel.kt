@@ -45,6 +45,7 @@ class MeteoCardViewModel : BaseCardViewModel(), IMeteoCardViewModel {
 
     private fun manageCurrentPreference(preferenceEvent: RxEvent.PreferenceEvent?) {
         this.preference = preferenceEvent?.preference
+        launchGetWeather()
     }
 
     //================================================================================

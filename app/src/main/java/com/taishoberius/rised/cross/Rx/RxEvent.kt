@@ -30,4 +30,12 @@ class RxEvent {
     data class PreferenceEvent(
         var preference: Preferences
     )
+
+    data class PreferenceNotificationEvent (
+        var preferenceUpdatedId: String
+    )
+
+    data class ToothBrushNotificationEvent(
+        var toothBrush: Boolean
+    )
 }
