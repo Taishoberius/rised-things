@@ -36,7 +36,11 @@ object ForecastRetrofitBuilder {
                 val stringRes = res.body()?.string()
                 val jsonObject = JSONObject(stringRes)
                 val contentType = res.body()?.contentType()
-                val responseBody = ResponseBody.create(contentType, jsonObject.get("list").toString())
+                val responseBody: ResponseBody
+                responseBody = if (jsonObject.has("list"))
+                    ResponseBody.create(contentType, jsonObject.get("list").toString())
+                else
+                    ResponseBody.create(contentType, "");
 
                 res.newBuilder().body(responseBody).build()
             }

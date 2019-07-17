@@ -1,5 +1,6 @@
 package com.taishoberius.rised.meteo.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.taishoberius.rised.cross.Rx.RxBus
@@ -66,6 +67,7 @@ class MeteoCardViewModel : BaseCardViewModel(), IMeteoCardViewModel {
     override fun launchGetWeather() {
         //TODO get the current city
         val city = (AddressUtil.getCity(preference?.address) ?: "Paris") + ",fr"
+        Log.w(TAG, "city = $city")
         ServiceManager.getForecastService().getFiveDaysWeather(city)
     }
 
@@ -91,11 +93,13 @@ class MeteoCardViewModel : BaseCardViewModel(), IMeteoCardViewModel {
     }
     private fun manageFiveDaysForecastEvent(event: RxEvent.ForecastListEvent?) {
         event?.let {e ->
-            //TODO ("remove useless data from the forecast list")
-           val fc = MeteoUtils.filterOneByDay(e.forecasts!!, preference?.weather ?: 0)
-            fiveDaysForecastLiveData.value = when {
-                e.success -> fc
-                else -> null
+            if (e.success) {
+                //TODO ("remove useless data from the forecast list")
+                val fc = MeteoUtils.filterOneByDay(e.forecasts!!, preference?.weather ?: 0)
+                fiveDaysForecastLiveData.value = when {
+                    e.success -> fc
+                    else -> null
+                }
             }
         }
     }

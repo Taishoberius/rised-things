@@ -2,13 +2,17 @@ package com.taishoberius.rised.trajet.view
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.taishoberius.rised.cross.view.BaseCardView
+import com.taishoberius.rised.meteo.adapter.MeteoAdapter
 import com.taishoberius.rised.trajet.viewmodel.ItineraryViewModel
 import kotlinx.android.synthetic.main.itinerary.view.*
+import kotlinx.android.synthetic.main.meteo.view.*
 
 class ItineraryCardView: BaseCardView, LifecycleOwner {
     private var lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
@@ -26,9 +30,10 @@ class ItineraryCardView: BaseCardView, LifecycleOwner {
     }
 
     override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
         lifecycleRegistry.markState(Lifecycle.State.RESUMED)
+        super.onAttachedToWindow()
         model.itineraryLiveData.observe(this, Observer {
+            Log.w(TAG, "itinerary live data received")
             if (it.available) {
                 itinerary_info.text = "Temps de trajet estimé: ${it.time}"
             } else {
@@ -40,5 +45,13 @@ class ItineraryCardView: BaseCardView, LifecycleOwner {
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         lifecycleRegistry.markState(Lifecycle.State.DESTROYED)
+    }
+
+    override fun initView() {
+
+    }
+
+    override fun initListener() {
+
     }
 }

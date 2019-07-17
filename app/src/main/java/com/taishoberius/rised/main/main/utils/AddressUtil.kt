@@ -14,8 +14,8 @@ class AddressUtil {
             if (address == null) return null
             val split = address.split('|')
             if (split.isEmpty()) return null;
-            if (split.count() > 1)
-                return split[1]
+            if (split.count() > 2)
+                return split[2]
 
             return null
         }
@@ -24,8 +24,8 @@ class AddressUtil {
             if (address == null) return null
             val split = address.split('|')
             if (split.isEmpty()) return null;
-            if (split.count() > 2)
-                return split[2]
+            if (split.count() > 1)
+                return split[1]
 
             return null
         }

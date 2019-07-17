@@ -5,4 +5,5 @@
     <string name="meteo_today">Today</string>
     <string name="no_device_connected">Aucun appareil connecté</string>
     <string name="poiuyt">test</string>
+    <string name="itinerary_calcul">calcul de l\'itinéraire...</string>
 </resources>

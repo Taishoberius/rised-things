@@ -24,7 +24,7 @@ class ItineraryViewModel: IBaseCardViewModel {
         val time: String,
         val available: Boolean
     )
-    private lateinit var itineraryMutableLiveData: MutableLiveData<ItineraryRepresentation>
+    private var itineraryMutableLiveData: MutableLiveData<ItineraryRepresentation> = MutableLiveData()
     var itineraryLiveData: LiveData<ItineraryRepresentation> = itineraryMutableLiveData
     private var preferenceDisposable: Disposable
 
@@ -32,7 +32,7 @@ class ItineraryViewModel: IBaseCardViewModel {
         preferenceDisposable = RxBus.listen(RxEvent.PreferenceEvent::class.java).subscribe {
             val preferences = it.preference
             val start = AddressUtil.getCity(preferences.address)
-            val end = AddressUtil.getCity(preferences.address)
+            val end = AddressUtil.getCity(preferences.workAddress)
             var mode = "driving"
 
             preferences.transportType?.also { transport ->
