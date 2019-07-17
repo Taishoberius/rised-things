@@ -3,6 +3,7 @@ package com.taishoberius.rised.trajet.view
 import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
+import android.view.View
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -34,10 +35,12 @@ class ItineraryCardView: BaseCardView, LifecycleOwner {
         super.onAttachedToWindow()
         model.itineraryLiveData.observe(this, Observer {
             Log.w(TAG, "itinerary live data received")
-            if (it.available) {
-                itinerary_info.text = "Temps de trajet estimé: ${it.time}"
+            if (it.available && it.time.isNotEmpty()) {
+                itinerary_icon.visibility = View.VISIBLE
+                itinerary_info.text = "${it.time}"
             } else {
-                itinerary_info.text = "Veuillez saisir une addresse dans l'application"
+                itinerary_icon.visibility = View.INVISIBLE
+                itinerary_info.text = "${it.time}"
             }
         })
     }

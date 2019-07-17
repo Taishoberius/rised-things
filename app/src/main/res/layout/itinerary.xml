@@ -17,7 +17,8 @@
         app:layout_constraintEnd_toStartOf="@id/itinerary_info"
         android:src="@drawable/ic_location"
         android:padding="10sp"
-        tools:ignore="NotSibling" />
+        tools:ignore="NotSibling"
+        android:visibility="invisible"/>
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/itinerary_info"
@@ -29,7 +30,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:text="@string/itinerary_calcul"
         android:textColor="@android:color/white"
         android:padding="10sp"
         />
