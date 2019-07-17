@@ -1,5 +1,6 @@
 package com.taishoberius.rised
 
+import android.animation.Animator
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.media.MediaMetadata
@@ -8,6 +9,8 @@ import android.preference.Preference
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import com.airbnb.lottie.LottieAnimationView
+import com.airbnb.lottie.LottieDrawable
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.things.pio.PeripheralManager
 import com.google.firebase.iid.FirebaseInstanceId
@@ -23,14 +26,18 @@ import com.taishoberius.rised.sensors.Arduino
 import com.taishoberius.rised.sensors.MotionSensor
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import java.util.*
+import kotlin.concurrent.schedule
 
 class MainActivity: BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfileDelegate {
     private lateinit var preferenceDisposable: Disposable
+    private lateinit var brushDisposable: Disposable
     private var token: String = ""
     private val TAG = "MainActivity"
     private lateinit var motionSensor: MotionSensor
@@ -107,7 +114,68 @@ class MainActivity: BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfil
         preferenceDisposable = RxBus.listen(RxEvent.PreferenceNotificationEvent::class.java).subscribe {
             Log.w(TAG, "preference notification receivced " + this.preference?.id + this.preference + " " + it.preferenceUpdatedId)
             if (preference?.id == it.preferenceUpdatedId) {
-                getPreferenceWithId(it.preferenceUpdatedId);
+                getPreferenceWithId(it.preferenceUpdatedId)
+            }
+        }
+
+        brushDisposable = RxBus.listen(RxEvent.ToothBrushNotificationEvent::class.java).subscribe {
+            startBrushing()
+        }
+
+
+    }
+
+    private fun startBrushing() {
+        lottie_anim_brush.visibility = View.VISIBLE
+        lottie_anim_brush.setAnimation(R.raw.tooth_1)
+        lottie_anim_brush.playAnimation()
+        lottie_anim_brush.removeAllAnimatorListeners()
+        lottie_anim_brush.addAnimatorListener(object: Animator.AnimatorListener {
+            override fun onAnimationRepeat(animation: Animator?) {
+                //Do nothing
+            }
+
+            override fun onAnimationEnd(animation: Animator?) {
+                lottie_anim_brush.setAnimation(R.raw.tooth_2)
+                lottie_anim_brush.removeAllAnimatorListeners()
+                lottie_anim_brush.repeatCount = LottieDrawable.INFINITE
+                lottie_anim_brush.playAnimation()
+            }
+
+            override fun onAnimationCancel(animation: Animator?) {
+                //Do nothing
+            }
+
+            override fun onAnimationStart(animation: Animator?) {
+                //Do nothing
+            }
+        })
+
+        GlobalScope.launch {
+            withContext(Dispatchers.Main) {
+                delay(10 * 1000)
+                lottie_anim_brush.setAnimation(R.raw.tooth_3)
+                lottie_anim_brush.repeatCount = 3
+                lottie_anim_brush.removeAllAnimatorListeners()
+                lottie_anim_brush.addAnimatorListener(object : Animator.AnimatorListener {
+                    override fun onAnimationRepeat(animation: Animator?) {
+                        //Do nothing
+                    }
+
+                    override fun onAnimationEnd(animation: Animator?) {
+                        lottie_anim_brush.removeAllAnimatorListeners()
+                        lottie_anim_brush.visibility = View.INVISIBLE
+                    }
+
+                    override fun onAnimationCancel(animation: Animator?) {
+                        //Do nothing
+                    }
+
+                    override fun onAnimationStart(animation: Animator?) {
+                        //Do nothing
+                    }
+                })
+                lottie_anim_brush.playAnimation()
             }
         }
     }

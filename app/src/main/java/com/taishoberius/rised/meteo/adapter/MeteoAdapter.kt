@@ -27,7 +27,7 @@ class MeteoAdapter() : RecyclerView.Adapter<MeteoViewHolder>() {
 
     override fun onBindViewHolder(holder: MeteoViewHolder, position: Int) {
         holder.itemView.txv_day.text = MyDateUtils.getToday(position)
-        holder.itemView.imv_day.setImageResource(MeteoUtils.getIcon(forecastList?.get(position)?.weather?.get(0)?.id ?: 0))
+        holder.itemView.lottie_anim_meteo.setAnimation(MeteoUtils.getIcon(forecastList?.get(position)?.weather?.get(0)?.id ?: 0))
         var temp = forecastList?.get(position)?.main?.temp
         if (temp == null) {
             temp = 200.0
