@@ -5,6 +5,7 @@ import android.media.MediaMetadata
 import com.taishoberius.rised.bluetooth.models.BluetoothState
 import com.taishoberius.rised.main.main.model.Preferences
 import com.taishoberius.rised.meteo.model.Forecast
+import com.taishoberius.rised.news.model.NewsList
 
 class RxEvent {
     data class ForecastEvent(

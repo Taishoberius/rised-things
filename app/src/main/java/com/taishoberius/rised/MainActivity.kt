@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.Toast
 import com.airbnb.lottie.LottieAnimationView
 import com.airbnb.lottie.LottieDrawable
+import com.airbnb.lottie.RenderMode
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.things.pio.PeripheralManager
 import com.google.firebase.iid.FirebaseInstanceId
@@ -138,6 +139,8 @@ class MainActivity: BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfil
             override fun onAnimationEnd(animation: Animator?) {
                 lottie_anim_brush.setAnimation(R.raw.tooth_2)
                 lottie_anim_brush.removeAllAnimatorListeners()
+                lottie_anim_brush.repeatMode = LottieDrawable.REVERSE
+                lottie_anim_brush.setRenderMode(RenderMode.HARDWARE)
                 lottie_anim_brush.repeatCount = LottieDrawable.INFINITE
                 lottie_anim_brush.playAnimation()
             }
@@ -153,7 +156,7 @@ class MainActivity: BluetoothActivity(), BluetoothMediaDelegate, BluetoothProfil
 
         GlobalScope.launch {
             withContext(Dispatchers.Main) {
-                delay(10 * 1000)
+                delay(3 * 60 * 1000)
                 lottie_anim_brush.setAnimation(R.raw.tooth_3)
                 lottie_anim_brush.repeatCount = 3
                 lottie_anim_brush.removeAllAnimatorListeners()
